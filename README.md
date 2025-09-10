@@ -1,8 +1,8 @@
-# MCP Piranha - Flag Sweeper
+# Flag Sweeper
 
 <div align="center">
   <img src="motivation.png" alt="Feature flags everywhere meme" width="500"/>
-  <p><em>"Feature flags are ruining your codebase" - Every developer ever</em></p>
+  <p><em>"Feature flags are ruining your codebase"</em></p>
 </div>
 
 ## The Problem
@@ -21,7 +21,7 @@ Feature flags are essential for modern software development, but they create a h
 
 A Model Context Protocol (MCP) server that uses Polyglot Piranha to automatically clean up feature flags in your codebase. Transform feature flag calls into their final values based on flag states defined in `flags.json`.
 
-**🎯 Vision:** Connect to live feature flag systems (LaunchDarkly, Split.io, etc.) to automatically identify and safely remove stable flags from your codebase.
+**🎯 Vision:** Connect to live feature flag systems (LaunchDarkly, Split.io, custom experimentation MCP) to automatically identify and safely remove stable flags from your codebase.
 
 ## ✨ What This Does
 
@@ -240,7 +240,7 @@ mcp-piranha/
 │   ├── test_multilayered.py
 │   └── test_*.py          # Additional test files
 ├── __main__.py            # Entry point
-├── flags.json             # Feature flag definitions  
+├── flags.json             # Feature flag definitions
 ├── motivation.png         # The problem we're solving
 └── README.md
 ```
@@ -248,7 +248,7 @@ mcp-piranha/
 ## 🎯 Supported Languages
 
 - **Go** - `isFeatureEnabled()`, `client.GetString()`, custom patterns
-- **Java** - `config.getBoolean()`, `featureManager.isEnabled()` 
+- **Java** - `config.getBoolean()`, `featureManager.isEnabled()`
 - **Python** - `is_feature_enabled()`, `get_flag()`
 - **JavaScript/TypeScript** - Various flag checking patterns
 - **C#** - Config-based flag patterns
@@ -308,6 +308,6 @@ graph LR
 
 ## 💡 Why This Matters
 
-> "Feature flags are a powerful tool, but without proper cleanup, they become technical debt that compounds over time. This project automates the tedious but critical task of flag removal, keeping codebases clean and maintainable." 
+> "Feature flags are a powerful tool, but without proper cleanup, they become technical debt that compounds over time. This project automates the tedious but critical task of flag removal, keeping codebases clean and maintainable."
 
 **The goal:** Make feature flag cleanup so easy and safe that it becomes a standard part of every development workflow.
