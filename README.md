@@ -1,8 +1,7 @@
-# Flag Sweeper
-
 <div align="center">
+  <h1>Flag Sweeper 🚩</h1>
   <img src="motivation.png" alt="Feature flags everywhere meme" width="500"/>
-  <p><em>"Feature flags are ruining your codebase"</em></p>
+  <p><em>Why is this still a problem in the age of AI?</em></p>
 </div>
 
 ## The Problem
