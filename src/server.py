@@ -65,9 +65,6 @@ def apply_rewrite(code: str, language: str, rules: list[dict] = None, edges: lis
                 if not flags_file.exists():
                     # Try parent directory
                     flags_file = Path(working_dir).parent / "flags.json"
-                if not flags_file.exists():
-                    # Try the project directory
-                    flags_file = Path("/Users/harrisbeg/Desktop/Work/Projects/mcp-piranha") / "flags.json"
                 if flags_file.exists():
                     with open(flags_file, 'r', encoding='utf-8') as f:
                         content = f.read()
