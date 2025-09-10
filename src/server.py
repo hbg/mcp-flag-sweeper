@@ -59,19 +59,19 @@ def apply_rewrite(code: str, language: str, rules: list[dict] = None, edges: lis
         elif flag_name:
             # If flag_name is provided but cache is empty, try to load flags first
             try:
-                # Try to find flags.md in the current working directory or project root
+                # Try to find flags.json in the current working directory or project root
                 working_dir = os.getcwd()
-                flags_file = Path(working_dir) / "flags.md"
+                flags_file = Path(working_dir) / "flags.json"
                 if not flags_file.exists():
                     # Try parent directory
-                    flags_file = Path(working_dir).parent / "flags.md"
+                    flags_file = Path(working_dir).parent / "flags.json"
                 if not flags_file.exists():
                     # Try the project directory
-                    flags_file = Path("/Users/harrisbeg/Desktop/Work/Projects/mcp-piranha") / "flags.md"
+                    flags_file = Path("/Users/harrisbeg/Desktop/Work/Projects/mcp-piranha") / "flags.json"
                 if flags_file.exists():
                     with open(flags_file, 'r', encoding='utf-8') as f:
                         content = f.read()
-                    parsed_data = parse_flags_md(content)
+                    parsed_data = parse_flags_json(content)
                     FLAGS_CACHE = {
                         "flags": parsed_data["flags"],
                         "global_patterns": parsed_data["global_patterns"]
@@ -82,9 +82,9 @@ def apply_rewrite(code: str, language: str, rules: list[dict] = None, edges: lis
                         edges = []
                         return {"debug": f"Loaded flag {flag_name}, generated {len(rules)} rules", "transformed_code": code}
                     else:
-                        return {"error": f"Flag '{flag_name}' not found in flags.md. Available flags: {list(FLAGS_CACHE['flags'].keys())}", "transformed_code": code}
+                        return {"error": f"Flag '{flag_name}' not found in flags.json. Available flags: {list(FLAGS_CACHE['flags'].keys())}", "transformed_code": code}
                 else:
-                    return {"error": "flags.md not found in current directory", "transformed_code": code}
+                    return {"error": "flags.json not found in current directory", "transformed_code": code}
             except Exception as e:
                 return {"error": f"Failed to load flags: {str(e)}", "transformed_code": code}
         elif rules is None:
@@ -147,21 +147,25 @@ def apply_rewrite(code: str, language: str, rules: list[dict] = None, edges: lis
 @app.tool
 def list_flags(working_directory: str = None) -> dict:
     """
-    List feature flags from flags.md file in the working directory.
+    List feature flags from flags.json file in the working directory.
 
-    Reads a flags.md file from the specified working directory (or current directory)
-    and parses flag definitions. The flags.md file should contain flag definitions
+    Reads a flags.json file from the specified working directory (or current directory)
+    and parses flag definitions. The flags.json file should contain flag definitions
     in the format:
 
-    # Feature Flags
-
-    ## flag_name
-    - **Value**: true/false
-    - **Description**: What this flag controls
-    - **Replace with**: What to replace the flag check with when cleaning up
+    {
+      "functions": ["function1", "function2"],
+      "flags": {
+        "flag_name": {
+          "value": true,
+          "description": "What this flag controls",
+          "replace_with": true
+        }
+      }
+    }
 
     Args:
-        working_directory: Directory to look for flags.md file (optional)
+        working_directory: Directory to look for flags.json file (optional)
 
     Returns:
         A dictionary containing parsed flags and their information.
@@ -171,21 +175,21 @@ def list_flags(working_directory: str = None) -> dict:
     if working_directory is None:
         working_directory = os.getcwd()
 
-    flags_file = Path(working_directory) / "flags.md"
+    flags_file = Path(working_directory) / "flags.json"
 
     if not flags_file.exists():
         return {
-            "error": f"flags.md not found in {working_directory}",
+            "error": f"flags.json not found in {working_directory}",
             "flags": [],
-            "suggestion": "Create a flags.md file with flag definitions"
+            "suggestion": "Create a flags.json file with flag definitions"
         }
 
     try:
         with open(flags_file, 'r', encoding='utf-8') as f:
             content = f.read()
 
-        # Parse the flags.md content
-        parsed_data = parse_flags_md(content)
+        # Parse the flags.json content
+        parsed_data = parse_flags_json(content)
         flags = parsed_data["flags"]
         global_patterns = parsed_data["global_patterns"]
 
@@ -205,65 +209,47 @@ def list_flags(working_directory: str = None) -> dict:
 
     except Exception as e:
         return {
-            "error": f"Failed to read flags.md: {str(e)}",
+            "error": f"Failed to read flags.json: {str(e)}",
             "flags": [],
             "source_file": str(flags_file)
         }
 
-def parse_flags_md(content: str) -> dict:
+def parse_flags_json(content: str) -> dict:
     """
-    Parse flags.md content to extract flag definitions and global function patterns.
+    Parse flags.json content to extract flag definitions and global function patterns.
 
     Expected format:
-    ## Functions
-    function1,function2,function3
-
-    ## Flags
-    flag_name:value:description:replace_with
+    {
+      "functions": ["function1", "function2", "function3"],
+      "flags": {
+        "flag_name": {
+          "value": true,
+          "description": "Flag description",
+          "replace_with": true
+        }
+      }
+    }
     """
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON format: {str(e)}")
+
     flags = {}
-    global_patterns = []
-    lines = content.split('\n')
+    global_patterns = data.get("functions", [])
 
-    in_functions = False
-    in_flags = False
+    # Parse flags
+    for flag_name, flag_data in data.get("flags", {}).items():
+        value = flag_data.get("value")
+        description = flag_data.get("description", "")
+        replace_with = flag_data.get("replace_with", value)
 
-    for line in lines:
-        line = line.strip()
-
-        # Check for sections
-        if line == "## Functions":
-            in_functions = True
-            in_flags = False
-            continue
-        elif line == "## Flags":
-            in_functions = False
-            in_flags = True
-            continue
-        elif line.startswith('##'):
-            in_functions = False
-            in_flags = False
-            continue
-
-        # Parse functions (comma-separated)
-        if in_functions and line:
-            global_patterns = [f.strip() for f in line.split(',') if f.strip()]
-
-        # Parse flags (colon-separated: name:value:description:replace_with)
-        elif in_flags and line and ':' in line:
-            parts = line.split(':', 3)
-            if len(parts) >= 2:
-                flag_name = parts[0].strip()
-                value = parts[1].strip()
-                description = parts[2].strip() if len(parts) > 2 else ""
-                replace_with = parts[3].strip() if len(parts) > 3 else value
-
-                flags[flag_name] = {
-                    "value": value,
-                    "description": description,
-                    "replace_with": replace_with,
-                    "enabled": value.lower() == 'true'
-                }
+        flags[flag_name] = {
+            "value": str(value).lower() if isinstance(value, bool) else str(value),
+            "description": description,
+            "replace_with": str(replace_with).lower() if isinstance(replace_with, bool) else str(replace_with),
+            "enabled": bool(value) if isinstance(value, bool) else str(value).lower() == 'true'
+        }
 
     return {
         "flags": flags,

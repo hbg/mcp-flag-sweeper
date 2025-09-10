@@ -1,6 +1,61 @@
-# Flag Sweeper
+# MCP Piranha - Flag Sweeper
 
-A Model Context Protocol (MCP) server that uses Polyglot Piranha to automatically clean up feature flags in your codebase. Transform feature flag calls into their final values based on flag states defined in `flags.md`.
+<div align="center">
+  <img src="motivation.png" alt="Feature flags everywhere meme" width="500"/>
+  <p><em>"Feature flags are ruining your codebase" - Every developer ever</em></p>
+</div>
+
+## The Problem
+
+Feature flags are essential for modern software development, but they create a hidden technical debt crisis:
+
+- 🏴‍☠️ **Dead flags** remain in production code for months/years
+- 🔀 **Branching complexity** makes code harder to understand and maintain
+- 🐛 **Bug risk** from outdated conditional logic
+- 🚀 **Performance overhead** from unnecessary runtime checks
+- 😤 **Developer frustration** navigating flag-polluted codebases
+
+**The reality:** Most feature flags should be temporary, but manual cleanup is time-consuming and error-prone.
+
+## The Solution
+
+A Model Context Protocol (MCP) server that uses Polyglot Piranha to automatically clean up feature flags in your codebase. Transform feature flag calls into their final values based on flag states defined in `flags.json`.
+
+**🎯 Vision:** Connect to live feature flag systems (LaunchDarkly, Split.io, etc.) to automatically identify and safely remove stable flags from your codebase.
+
+## ✨ What This Does
+
+**Before (Feature Flag Hell):**
+```go
+if isFeatureEnabled("beta_ui") {
+    renderBetaUI()
+} else {
+    renderOldUI()
+}
+
+if client.GetString("new_checkout") == "true" {
+    processNewCheckout()
+} else {
+    processLegacyCheckout()
+}
+```
+
+**After (Clean, Maintainable Code):**
+```go
+if true {
+    renderBetaUI()
+} else {
+    renderOldUI()
+}
+
+if false {
+    processNewCheckout()
+} else {
+    processLegacyCheckout()
+}
+```
+
+*Next step: Let your compiler/optimizer remove the dead branches entirely!*
 
 ## 🚀 Quick Start
 
@@ -26,31 +81,44 @@ A Model Context Protocol (MCP) server that uses Polyglot Piranha to automaticall
    }
    ```
 
-3. **Create `flags.md` in your project:**
-   ```markdown
-   # Feature Flags
-
-   ## Functions
-   isFeatureEnabled,client.GetString,isEnabled,getFlag,is_feature_enabled
-
-   ## Flags
-   beta_ui:true:Enables the new beta user interface:true
-   new_checkout:false:New payment processing flow:false
+3. **Create `flags.json` in your project:**
+   ```json
+   {
+     "functions": [
+       "isFeatureEnabled",
+       "client.GetString",
+       "isEnabled",
+       "getFlag",
+       "is_feature_enabled"
+     ],
+     "flags": {
+       "beta_ui": {
+         "value": true,
+         "description": "Enables the new beta user interface",
+         "replace_with": true
+       },
+       "new_checkout": {
+         "value": false,
+         "description": "New payment processing flow",
+         "replace_with": false
+       }
+     }
+   }
    ```
 
 ## 🛠️ MCP Tools
 
 ### `list_flags`
-Loads and parses feature flags from `flags.md` in your project directory.
+Loads and parses feature flags from `flags.json` in your project directory.
 
 **Parameters:**
-- `working_directory` (optional): Directory to search for `flags.md`
+- `working_directory` (optional): Directory to search for `flags.json`
 
 **Returns:**
 - `flags`: List of flag names
 - `flag_details`: Detailed flag information
 - `global_patterns`: Function patterns for detection
-- `source_file`: Path to the loaded `flags.md`
+- `source_file`: Path to the loaded `flags.json`
 
 ### `apply_rewrite`
 Transforms code by replacing feature flag calls with their final values.
@@ -66,49 +134,80 @@ Transforms code by replacing feature flag calls with their final values.
 - `transformed_code`: The transformed code
 - `message`: Status message
 
-## 📝 `flags.md` Format
+## 📝 `flags.json` Format
 
-Ultra-concise format for defining feature flags and detection patterns:
+JSON format for defining feature flags and detection patterns:
 
-```markdown
-# Feature Flags
-
-## Functions
-function1,function2,function3
-
-## Flags
-flag_name:value:description:replace_with
+```json
+{
+  "functions": ["function1", "function2", "function3"],
+  "flags": {
+    "flag_name": {
+      "value": true,
+      "description": "Flag description",
+      "replace_with": true
+    }
+  }
+}
 ```
 
 ### Format Details
 
-**Functions Section:**
-- Comma-separated list of function names to detect
-- Examples: `isFeatureEnabled`, `client.GetString`, `isEnabled`
+**Functions Array:**
+- Array of function names to detect
+- Examples: `"isFeatureEnabled"`, `"client.GetString"`, `"isEnabled"`
 - Supports any function that takes the flag name as a string parameter
 
-**Flags Section:**
-- Format: `name:value:description:replace_with`
-- `name`: Flag identifier
-- `value`: Current state (true/false)
-- `description`: Human-readable description
-- `replace_with`: What to replace with when cleaning up
-- Minimal format: `name:value` (description and replace_with default to value)
+**Flags Object:**
+- Object with flag names as keys
+- Each flag contains:
+  - `value`: Current state (true/false)
+  - `description`: Human-readable description
+  - `replace_with`: What to replace with when cleaning up
 
 ### Example
 
-```markdown
-# Feature Flags
-
-## Functions
-isFeatureEnabled,client.GetString,isEnabled,getFlag,is_feature_enabled,get_flag,flag_manager.is_feature_enabled,config.getBoolean,settings.isEnabled
-
-## Flags
-beta_ui:true:Enables the new beta user interface with modern design elements:true
-new_checkout_flow:false:New payment processing flow with improved UX:false
-feature_flag:true:Generic feature flag for testing purposes:true
-legacy_auth:false:Legacy authentication system (deprecated):false
-debug_mode:true:Enables debug logging and additional error information:true
+```json
+{
+  "functions": [
+    "isFeatureEnabled",
+    "client.GetString",
+    "isEnabled",
+    "getFlag",
+    "is_feature_enabled",
+    "get_flag",
+    "flag_manager.is_feature_enabled",
+    "config.getBoolean",
+    "settings.isEnabled"
+  ],
+  "flags": {
+    "beta_ui": {
+      "value": true,
+      "description": "Enables the new beta user interface with modern design elements",
+      "replace_with": true
+    },
+    "new_checkout_flow": {
+      "value": false,
+      "description": "New payment processing flow with improved UX",
+      "replace_with": false
+    },
+    "feature_flag": {
+      "value": true,
+      "description": "Generic feature flag for testing purposes",
+      "replace_with": true
+    },
+    "legacy_auth": {
+      "value": false,
+      "description": "Legacy authentication system (deprecated)",
+      "replace_with": false
+    },
+    "debug_mode": {
+      "value": true,
+      "description": "Enables debug logging and additional error information",
+      "replace_with": true
+    }
+  }
+}
 ```
 
 ## 🔧 How It Works
@@ -141,50 +240,74 @@ mcp-piranha/
 │   ├── test_multilayered.py
 │   └── test_*.py          # Additional test files
 ├── __main__.py            # Entry point
-├── flags.md               # Feature flag definitions
+├── flags.json             # Feature flag definitions  
+├── motivation.png         # The problem we're solving
 └── README.md
 ```
 
 ## 🎯 Supported Languages
 
-- Go
-- Java
-- Python
-- JavaScript/TypeScript
-- C#
-- And more via Polyglot Piranha
+- **Go** - `isFeatureEnabled()`, `client.GetString()`, custom patterns
+- **Java** - `config.getBoolean()`, `featureManager.isEnabled()` 
+- **Python** - `is_feature_enabled()`, `get_flag()`
+- **JavaScript/TypeScript** - Various flag checking patterns
+- **C#** - Config-based flag patterns
+- **And more** - Extensible via Polyglot Piranha's rule system
 
-## 🔍 Example Transformations
+## 🔍 Real-World Impact
 
-**Before:**
-```go
-if isFeatureEnabled("beta_ui") {
-    renderBetaUI()
-} else {
-    renderStandardUI()
-}
+### Code Complexity Reduction
+**Before:** Navigating nested flag conditions
+```python
+if is_feature_enabled("new_dashboard"):
+    if is_feature_enabled("advanced_analytics"):
+        render_advanced_dashboard()
+    else:
+        render_basic_new_dashboard()
+else:
+    render_legacy_dashboard()
 ```
 
-**After (beta_ui: true):**
-```go
-if true {
-    renderBetaUI()
-} else {
-    renderStandardUI()
-}
+**After:** Clear, linear logic
+```python
+if true:
+    if true:
+        render_advanced_dashboard()
+    else:
+        render_basic_new_dashboard()
+else:
+    render_legacy_dashboard()
 ```
 
-**After (beta_ui: false):**
-```go
-if false {
-    renderBetaUI()
-} else {
-    renderStandardUI()
-}
+### Performance Benefits
+- ❌ **Runtime flag evaluation** (database/API calls)
+- ✅ **Compile-time constants** (zero runtime overhead)
+- 🚀 **Dead code elimination** by compilers/bundlers
+
+## 🔮 Future Vision: Enterprise Integration
+
+```mermaid
+graph LR
+    A[Feature Flag System<br/>LaunchDarkly/Split.io] --> B[Safety Analysis<br/>Rollout % / Stability]
+    B --> C[MCP Piranha<br/>Code Transformation]
+    C --> D[Clean Codebase<br/>Zero Technical Debt]
 ```
+
+**Coming Soon:**
+- 🔌 **Live flag system integration** - Connect directly to LaunchDarkly, Split.io, Unleash
+- 🛡️ **Safety analysis** - Only remove flags with 95%+ rollout and 30+ day stability
+- 🔄 **Automated workflows** - CI/CD integration with approval processes
+- 📊 **Impact analysis** - Preview changes before applying
+- 🎯 **Bulk operations** - Clean entire codebases safely
 
 ## 🚨 Troubleshooting
 
-- **"No transformations applied"**: Check that `flags.md` exists and contains the flag
-- **"Connection closed"**: Restart Cursor or the MCP server
+- **"No transformations applied"**: Check that `flags.json` exists and contains the flag
+- **"Connection closed"**: Restart Claude Code or the MCP server
 - **"Invalid tree-sitter query"**: Ensure function patterns are valid identifiers
+
+## 💡 Why This Matters
+
+> "Feature flags are a powerful tool, but without proper cleanup, they become technical debt that compounds over time. This project automates the tedious but critical task of flag removal, keeping codebases clean and maintainable." 
+
+**The goal:** Make feature flag cleanup so easy and safe that it becomes a standard part of every development workflow.

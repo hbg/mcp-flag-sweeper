@@ -1,0 +1,41 @@
+{
+  "functions": [
+    "isFeatureEnabled",
+    "client.GetString",
+    "isEnabled",
+    "getFlag",
+    "client.getString",
+    "is_feature_enabled",
+    "get_flag",
+    "flag_manager.is_feature_enabled",
+    "config.getBoolean",
+    "settings.isEnabled"
+  ],
+  "flags": {
+    "beta_ui": {
+      "value": true,
+      "description": "Enables the new beta user interface with modern design elements",
+      "replace_with": true
+    },
+    "new_checkout_flow": {
+      "value": false,
+      "description": "New payment processing flow with improved UX",
+      "replace_with": false
+    },
+    "feature_flag": {
+      "value": true,
+      "description": "Generic feature flag for testing purposes",
+      "replace_with": true
+    },
+    "legacy_auth": {
+      "value": false,
+      "description": "Legacy authentication system (deprecated)",
+      "replace_with": false
+    },
+    "debug_mode": {
+      "value": true,
+      "description": "Enables debug logging and additional error information",
+      "replace_with": true
+    }
+  }
+}

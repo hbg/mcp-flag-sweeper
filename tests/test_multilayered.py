@@ -8,31 +8,76 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.server import parse_flags_md, generate_rules_for_flag
+from src.server import parse_flags_json, generate_rules_for_flag
 from polyglot_piranha import execute_piranha, PiranhaArguments, Rule, RuleGraph, OutgoingEdges
 
 def test_multilayered_scenario():
     """Test a complex scenario with multiple flags and function patterns."""
 
-    # Create a comprehensive flags.md content
-    flags_content = """# Feature Flags
-
-## Functions
-isFeatureEnabled,client.GetString,isEnabled,getFlag,is_feature_enabled,get_flag,flag_manager.is_feature_enabled,config.getBoolean,settings.isEnabled,feature.isOn,checkFlag,hasFeature
-
-## Flags
-beta_ui:true:Enables the new beta user interface:true
-new_checkout:false:New payment processing flow:false
-debug_mode:true:Enables debug logging:true
-legacy_auth:false:Legacy authentication system:false
-premium_features:true:Premium user features:true
-analytics_tracking:false:User analytics tracking:false
-dark_mode:true:Dark theme support:true
-mobile_optimized:false:Mobile-specific optimizations:false
-"""
+    # Create comprehensive flags.json content
+    import json
+    flags_data = {
+        "functions": [
+            "isFeatureEnabled",
+            "client.GetString", 
+            "isEnabled",
+            "getFlag",
+            "is_feature_enabled",
+            "get_flag",
+            "flag_manager.is_feature_enabled",
+            "config.getBoolean",
+            "settings.isEnabled",
+            "feature.isOn",
+            "checkFlag",
+            "hasFeature"
+        ],
+        "flags": {
+            "beta_ui": {
+                "value": True,
+                "description": "Enables the new beta user interface",
+                "replace_with": True
+            },
+            "new_checkout": {
+                "value": False,
+                "description": "New payment processing flow",
+                "replace_with": False
+            },
+            "debug_mode": {
+                "value": True,
+                "description": "Enables debug logging",
+                "replace_with": True
+            },
+            "legacy_auth": {
+                "value": False,
+                "description": "Legacy authentication system",
+                "replace_with": False
+            },
+            "premium_features": {
+                "value": True,
+                "description": "Premium user features",
+                "replace_with": True
+            },
+            "analytics_tracking": {
+                "value": False,
+                "description": "User analytics tracking",
+                "replace_with": False
+            },
+            "dark_mode": {
+                "value": True,
+                "description": "Dark theme support",
+                "replace_with": True
+            },
+            "mobile_optimized": {
+                "value": False,
+                "description": "Mobile-specific optimizations",
+                "replace_with": False
+            }
+        }
+    }
+    flags_content = json.dumps(flags_data)
 
     # Parse the flags
-    parsed_data = parse_flags_md(flags_content)
+    parsed_data = parse_flags_json(flags_content)
     flags = parsed_data['flags']
     global_patterns = parsed_data['global_patterns']
 
