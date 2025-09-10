@@ -1,7 +1,6 @@
 <div align="center">
+  <img width="100" height="100" alt="Screenshot 2025-09-09 at 7 46 55 PM" src="https://github.com/user-attachments/assets/b674bd04-88df-4d05-9c1f-2fc8337ae769" />
   <h1>Flag Sweeper 🚩</h1>
-  <img src="motivation.png" alt="Feature flags everywhere meme" width="500"/>
-  <p><em>Why is this still a problem in the age of AI?</em></p>
 </div>
 
 ## The Problem
