@@ -142,7 +142,7 @@ def apply_rewrite(code: str, language: str, rules: list[dict] = None, edges: lis
             return {"error": f"Piranha execution failed: {error_msg}", "transformed_code": code}
 
 # -------------------------------------------------------------------
-# Tool: List Flags (reads from flags.md)
+# Tool: List Flags (reads from flags.json)
 # -------------------------------------------------------------------
 @app.tool
 def list_flags(working_directory: str = None) -> dict:
@@ -262,7 +262,7 @@ def generate_rules_for_flag(flag_name: str, flag_info: dict, language: str) -> l
 
     Args:
         flag_name: Name of the flag
-        flag_info: Flag information from flags.md
+        flag_info: Flag information from flags.json
         language: Target programming language
 
     Returns:
