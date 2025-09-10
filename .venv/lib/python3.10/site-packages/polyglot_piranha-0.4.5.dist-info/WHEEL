@@ -1,0 +1,6 @@
+Wheel-Version: 1.0
+Generator: maturin (1.9.3)
+Root-Is-Purelib: false
+Tag: cp310-cp310-macosx_10_13_universal2
+Generator: delocate 0.13.0
+
